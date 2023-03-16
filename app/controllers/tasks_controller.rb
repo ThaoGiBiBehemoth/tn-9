@@ -1,5 +1,5 @@
 class TasksController < ApplicationController
-  before_action :authorize
+  before_action :authorize, dependent: :destroy #dependent: :destroy  <dùng để huỷ luôn items khi task bị huỷ>
   before_action :set_task, only: %i[show update destroy]
 
   # LIST TASKS (GET: /tasks)
