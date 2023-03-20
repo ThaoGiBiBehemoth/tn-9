@@ -1,7 +1,7 @@
 class TasksController < ApplicationController
   before_action :authorize, dependent: :destroy #dependent: :destroy  <dùng để huỷ luôn items khi task bị huỷ>
   before_action :set_task, only: %i[show update destroy]
-  before_action :set_status_task, only: [:update]
+  before_action :check_status_task, only: [:update]
 
   # LIST TASKS (GET: /tasks)
   def index
@@ -30,10 +30,15 @@ class TasksController < ApplicationController
 
   # UPDATE (PATCH/PUT: /tasks/1)
   def update
-    if @task.update(task_params)
-      render json: @task, status: 200
+    # binding.pry
+    if @task.status == "done" && @task_can_done == false
+      render json: { message: "This task can't done. Because all item not done" }, status: 422
     else
-      render json: @task.errors, status: 422
+      if @task.update(task_params)
+        render json: @task, status: 200
+      else
+        render json: @task.errors, status: 422
+      end      
     end
   end
 
@@ -53,7 +58,7 @@ class TasksController < ApplicationController
   end
 
   def task_params
-    params.require(:task).permit(:title, :done, :deadline)
+    params.require(:task).permit(:title, :status, :deadline)
   end
 
   def serialize_pagy(pagy)
@@ -68,10 +73,12 @@ class TasksController < ApplicationController
     }
   end
 
-  def set_status_task
+  def check_status_task
     item = Item.where(Task_id: @task.id, status: ["doing","pending"])
     if item.count > 0
-      render json: { message: "This task can't done. Because all item not done" }
+      @task_can_done = true
+    else
+      @task_can_done = false
     end
   end
 end
