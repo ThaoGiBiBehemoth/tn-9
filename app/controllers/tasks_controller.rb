@@ -5,8 +5,10 @@ class TasksController < ApplicationController
   # LIST TASKS (GET: /tasks)
   def index
     # @tasks = @user.tasks.all
-    @tasks = @user.tasks.ransack(params[:q]).result # search
-    render json: @tasks
+    # @tasks = @user.tasks.ransack(params[:q]).result # search
+    pagy, @tasks = pagy(@user.tasks.ransack(params[:q]).result)
+    render json: { data: @tasks, pagy: serialize_pagy(pagy) }
+    # render json: @tasks
   end
 
   # SHOW EACH TASKS (GET: /tasks/1)
@@ -51,5 +53,17 @@ class TasksController < ApplicationController
 
   def task_params
     params.require(:task).permit(:title, :done, :deadline)
+  end
+
+  def serialize_pagy(pagy)
+    data = pagy_metadata pagy
+    {
+      current_page: data[:page],
+      next_page: data[:next],
+      prev_page: data[:prev],
+      total_pages: data[:pages],
+      total_count: data[:count],
+      per_page: data[:items]
+    }
   end
 end
