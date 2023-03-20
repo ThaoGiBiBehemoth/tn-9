@@ -31,7 +31,7 @@ class TasksController < ApplicationController
   # UPDATE (PATCH/PUT: /tasks/1)
   def update
     # binding.pry
-    if @task.status == "done" && @task_can_done == false
+    if params["task"]["status"] == "done" && @task_can_done == false
       render json: { message: "This task can't done. Because all item not done" }, status: 422
     else
       if @task.update(task_params)
@@ -76,9 +76,9 @@ class TasksController < ApplicationController
   def check_status_task
     item = Item.where(Task_id: @task.id, status: ["doing","pending"])
     if item.count > 0
-      @task_can_done = true
-    else
       @task_can_done = false
+    else
+      @task_can_done = true
     end
   end
 end
