@@ -1,6 +1,7 @@
 class TasksController < ApplicationController
   before_action :authorize, dependent: :destroy #dependent: :destroy  <dùng để huỷ luôn items khi task bị huỷ>
   before_action :set_task, only: %i[show update destroy]
+  before_action :set_status_task, only: [:update]
 
   # LIST TASKS (GET: /tasks)
   def index
@@ -65,5 +66,12 @@ class TasksController < ApplicationController
       total_count: data[:count],
       per_page: data[:items]
     }
+  end
+
+  def set_status_task
+    item = Item.where(Task_id: @task.id, status: ["doing","pending"])
+    if item.count > 0
+      render json: { message: "This task can't done. Because all item not done" }
+    end
   end
 end
