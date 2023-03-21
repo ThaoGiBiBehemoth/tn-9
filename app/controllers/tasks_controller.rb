@@ -19,10 +19,9 @@ class TasksController < ApplicationController
 
   # NEW TASK (POST: /tasks)
   def create
-    @task = Task.new(task_params.merge(user: @user))
-
-    if @task.save
-      render json: @task, status: 200, location: @task # location: @task  : ???
+    @task = Task.new(task_params.merge(user_id: @user.id))
+    if @task.save!
+      render json: @task, status: 200     #,location: @task ???
     else
       render json: @task.errors, status: 422
     end
@@ -58,9 +57,12 @@ class TasksController < ApplicationController
   end
 
   def task_params
-    params.require(:task).permit(:title, :status, :deadline)
+    params.require(:task).permit(:title, :status, :deadline, items_attributes: [:title, :descrip, :status, :deadline])
   end
 
+  def item_params
+    params.require(:item).permit(:title, :descrip, :status, :deadline)
+  end
   def serialize_pagy(pagy)
     data = pagy_metadata pagy
     {
